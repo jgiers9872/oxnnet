@@ -43,12 +43,12 @@ class CNN(object):
             write_csv(os.path.join(save_dir, 'log.csv'), train_loss_iterations)
             write_csv(os.path.join(save_dir, 'full_validation_log.csv'), full_validation_metrics)
         with tf.Graph().as_default():
-            config = tf.ConfigProto()
+            config = tf.compat.v1.ConfigProto()
             config.gpu_options.allow_growth = True
             tflearn.config.init_training_mode()
-            with tf.name_scope('training'):
+            with tf.compat.v1.name_scope('training'):
                 model = self.module.Model(batch_size, False, tf_record_dir, num_epochs)
-            with tf.name_scope('eval'):
+            with tf.compat.v1.name_scope('eval'):
                 model_eval = self.module.Model(batch_size, True, tf_record_dir,
                                                num_epochs) if validation_tups else None
             model_test = self.module.Model(batch_size, True)
@@ -57,7 +57,7 @@ class CNN(object):
             global_step = model.global_step #tf.Variable(0, name='global_step', trainable=False)
             lr = model.lr #tf.train.exponential_decay(learning_rate, global_step, lr_steps, lr_decay, staircase=True) if lr_steps else learning_rate
             optimizer = model.optimizer #tf.train.AdamOptimizer(lr  of decay_steps)
-            tf.summary.scalar('learning_rate', lr)
+            tf.compat.v1.summary.scalar('learning_rate', lr)
             update_op = self._avg(model.loss_op, optimizer, global_step) if avg else optimizer.minimize(model.loss_op,
                                                                                                         global_step=global_step)
             #update_op = optimizer.minimize(model.loss_op,
@@ -65,27 +65,27 @@ class CNN(object):
 
             #config = tf.ConfigProto()
             #config.gpu_options.allow_growth = True
-            with tf.Session(config=config) as sess:
+            with tf.compat.v1.Session(config=config) as sess:
                 merged = s.summarize_variables()
-                merged = tf.summary.merge_all()
-                summary_writer = tf.summary.FileWriter(save_dir, sess.graph)
-                sess.run(tf.local_variables_initializer())
-                sess.run(tf.global_variables_initializer())
-                saver = tf.train.Saver()
-                saver_epoch = tf.train.Saver(max_to_keep=None)
+                merged = tf.compat.v1.summary.merge_all()
+                summary_writer = tf.compat.v1.summary.FileWriter(save_dir, sess.graph)
+                sess.run(tf.compat.v1.local_variables_initializer())
+                sess.run(tf.compat.v1.global_variables_initializer())
+                saver = tf.compat.v1.train.Saver()
+                saver_epoch = tf.compat.v1.train.Saver(max_to_keep=None)
                 coord = tf.train.Coordinator()
                 if model_file:
                     if avg:
                         variable_averages = tf.train.ExponentialMovingAverage(0.999)
                         vars_to_restore = variable_averages.variables_to_restore()
                         vars_to_restore = model.filter_vars(vars_to_restore)
-                        restore_saver = (tf.train.Saver(vars_to_restore)
-                                         if vars_to_restore else tf.train.Saver())
+                        restore_saver = (tf.compat.v1.train.Saver(vars_to_restore)
+                                         if vars_to_restore else tf.compat.v1.train.Saver())
                         restore_saver.restore(sess, model_file)
                     else:
-                        vars_to_restore = model.filter_vars(tf.global_variables())
-                        restore_saver = (tf.train.Saver(vars_to_restore)
-                                         if vars_to_restore else tf.train.Saver())
+                        vars_to_restore = model.filter_vars(tf.compat.v1.global_variables())
+                        restore_saver = (tf.compat.v1.train.Saver(vars_to_restore)
+                                         if vars_to_restore else tf.compat.v1.train.Saver())
                         restore_saver.restore(sess, model_file)
                 try:
                     continue_training = True
@@ -96,7 +96,7 @@ class CNN(object):
                         previous_epoch = epoch
                         epoch = cur_step//num_batches_per_epoch
                         start = time.time()
-                        if epoch != previous_epoch: saver = tf.train.Saver()
+                        if epoch != previous_epoch: saver = tf.compat.v1.train.Saver()
                         #print(tf.get_collection('summaries'))
                         #if num_batches_val and cur_step % num_save_every == 0:
                         message_string = ''
@@ -206,20 +206,20 @@ class CNN(object):
 
     def test(self, save_dir, test_data, model_file, batch_size, avg=False):
         #with tf.get_default_graph().as_default():
-            config = tf.ConfigProto()
+            config = tf.compat.v1.ConfigProto()
             config.gpu_options.allow_growth = True
             model = self.module.Model(batch_size, False) #get_model_with_placeholders(self.module, reuse=False)
             if avg:
                 variable_averages = tf.train.ExponentialMovingAverage(0.999)
                 variables_to_restore = variable_averages.variables_to_restore()
-                saver = tf.train.Saver(variables_to_restore)
+                saver = tf.compat.v1.train.Saver(variables_to_restore)
             else:
-                saver = tf.train.Saver()
-            with tf.Session() as sess:
-                sess.run(tf.global_variables_initializer())
+                saver = tf.compat.v1.train.Saver()
+            with tf.compat.v1.Session() as sess:
+                sess.run(tf.compat.v1.global_variables_initializer())
                 saver.restore(sess, model_file)
                 tflearn.is_training(False)
-                with tf.variable_scope("inference") as scope:
+                with tf.compat.v1.variable_scope("inference") as scope:
                     scope.reuse_variables()
                 scope.reuse_variables()
                 print(sess.run(tflearn.get_training_mode()))
@@ -239,13 +239,13 @@ class CNN(object):
                 sess.close()
 
     def feats(self, save_dir, test_data, model_file, batch_size):
-        with tf.get_default_graph().as_default():
+        with tf.compat.v1.get_default_graph().as_default():
             #config = tf.ConfigProto()
             #config.gpu_options.allow_growth=True
             model = self.module.Model(batch_size, False) #get_model_with_placeholders(self.module, reuse=False)
-            saver = tf.train.Saver()
-            with tf.Session() as sess:
-                sess.run(tf.global_variables_initializer())
+            saver = tf.compat.v1.train.Saver()
+            with tf.compat.v1.Session() as sess:
+                sess.run(tf.compat.v1.global_variables_initializer())
                 saver.restore(sess, model_file)
                 tflearn.is_training(False)
                 #with tf.variable_scope("inference") as scope:
@@ -277,7 +277,7 @@ class CNN(object):
             """
         # Compute the moving average of all individual losses and the total loss.
         loss_averages = tf.train.ExponentialMovingAverage(0.999, name='avg')
-        losses = tf.get_collection('losses')
+        losses = tf.compat.v1.get_collection('losses')
         loss_averages_op = loss_averages.apply(losses + [total_loss])
 
         # Attach a scalar summary to all individual losses and the total loss; do the
@@ -285,8 +285,8 @@ class CNN(object):
         for l in losses + [total_loss]:
             # Name each loss as '(raw)' and name the moving average version of the loss
             # as the original loss name.
-            tf.summary.scalar(l.op.name + ' (raw)', l)
-            tf.summary.scalar(l.op.name, loss_averages.average(l))
+            tf.compat.v1.summary.scalar(l.op.name + ' (raw)', l)
+            tf.compat.v1.summary.scalar(l.op.name, loss_averages.average(l))
 
         return loss_averages_op
 
@@ -304,19 +304,19 @@ class CNN(object):
             apply_gradient_op = opt.apply_gradients(grads, global_step=global_step)
 
             # Add histograms for trainable variables.
-            for var in tf.trainable_variables():
-                tf.summary.histogram(var.op.name, var)
+            for var in tf.compat.v1.trainable_variables():
+                tf.compat.v1.summary.histogram(var.op.name, var)
 
             # Add histograms for gradients.
             for grad, var in grads:
                 if grad is not None:
-                    tf.summary.histogram(var.op.name + '/gradients', grad)
+                    tf.compat.v1.summary.histogram(var.op.name + '/gradients', grad)
 
             # Track the moving averages of all trainable variables.
             variable_averages = tf.train.ExponentialMovingAverage(
                 0.999, global_step)
             with tf.control_dependencies([apply_gradient_op]):
-                variables_averages_op = variable_averages.apply(tf.trainable_variables())
+                variables_averages_op = variable_averages.apply(tf.compat.v1.trainable_variables())
 
             return variables_averages_op
             #return loss_op

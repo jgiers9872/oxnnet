@@ -47,17 +47,17 @@ class StandardProcessTup(AbstractProcessTup):
         return features
 
     def features_decode(self, serialized_example):
-        example = tf.parse_single_example(
-            serialized_example,
+        example = tf.io.parse_single_example(
+            serialized=serialized_example,
             features={
-                'volume_raw': tf.FixedLenFeature([np.prod(self.data_loader.segment_size)], tf.float32),
-                'volume_seg': tf.FixedLenFeature([], tf.string),
+                'volume_raw': tf.io.FixedLenFeature([np.prod(self.data_loader.segment_size)], tf.float32),
+                'volume_seg': tf.io.FixedLenFeature([], tf.string),
             }
         )
         volume = example['volume_raw']
         volume.set_shape([np.prod(self.data_loader.segment_size)])
 
-        label = tf.decode_raw(example['volume_seg'], tf.uint8)
+        label = tf.io.decode_raw(example['volume_seg'], tf.uint8)
         label.set_shape([np.prod(self.data_loader.segment_size-2*self.data_loader.crop_by)])
         return volume, label
 
@@ -69,7 +69,7 @@ class StandardProcessTup(AbstractProcessTup):
 
         filename = os.path.join(self.output_dir, name + '.tfrecords')
         print('Writing', filename)
-        writer = tf.python_io.TFRecordWriter(filename)
+        writer = tf.io.TFRecordWriter(filename)
         for index in range(volumes.shape[0]):
             volume_raw = volumes[index].ravel()
             label_raw = labels[index].tostring()
@@ -98,12 +98,12 @@ class TwoPathwayProcessTup(AbstractProcessTup):
         return features
 
     def features_decode(self, serialized_example):
-        example = tf.parse_single_example(
-            serialized_example,
+        example = tf.io.parse_single_example(
+            serialized=serialized_example,
             features={
-                'volume_raw': tf.FixedLenFeature([np.prod(self.data_loader.segment_size)], tf.float32),
-                'volume_raw_ss': tf.FixedLenFeature([np.prod(self.data_loader.segment_size_ss)], tf.float32),
-                'volume_seg': tf.FixedLenFeature([], tf.string),
+                'volume_raw': tf.io.FixedLenFeature([np.prod(self.data_loader.segment_size)], tf.float32),
+                'volume_raw_ss': tf.io.FixedLenFeature([np.prod(self.data_loader.segment_size_ss)], tf.float32),
+                'volume_seg': tf.io.FixedLenFeature([], tf.string),
             }
         )
         volume = example['volume_raw']
@@ -112,7 +112,7 @@ class TwoPathwayProcessTup(AbstractProcessTup):
         volume_ss = example['volume_raw_ss']
         volume_ss.set_shape([np.prod(self.data_loader.segment_size_ss)])
 
-        label = tf.decode_raw(example['volume_seg'], tf.uint8)
+        label = tf.io.decode_raw(example['volume_seg'], tf.uint8)
         label.set_shape([np.prod(self.data_loader.segment_size-2*self.data_loader.crop_by)])
         return volume, label, volume_ss
 
@@ -128,7 +128,7 @@ class TwoPathwayProcessTup(AbstractProcessTup):
 
         filename = os.path.join(self.output_dir, name + '.tfrecords')
         print('Writing', filename)
-        writer = tf.python_io.TFRecordWriter(filename)
+        writer = tf.io.TFRecordWriter(filename)
         for index in range(volumes.shape[0]):
             volume_raw = volumes[index].ravel()
             volume_raw_ss = volumes_ss[index].ravel()
@@ -156,21 +156,21 @@ class DistMapProcessTup(AbstractProcessTup):
         return features
 
     def features_decode(self, serialized_example):
-        example = tf.parse_single_example(
-            serialized_example,
+        example = tf.io.parse_single_example(
+            serialized=serialized_example,
             features={
-                'volume_raw': tf.FixedLenFeature([np.prod(self.data_loader.segment_size)], tf.float32),
-                'distmap_raw': tf.FixedLenFeature([], tf.string),
-                'volume_seg': tf.FixedLenFeature([], tf.string),
+                'volume_raw': tf.io.FixedLenFeature([np.prod(self.data_loader.segment_size)], tf.float32),
+                'distmap_raw': tf.io.FixedLenFeature([], tf.string),
+                'volume_seg': tf.io.FixedLenFeature([], tf.string),
             }
         )
         volume = example['volume_raw']
         volume.set_shape([np.prod(self.data_loader.segment_size)])
 
-        distmap = tf.decode_raw(example['distmap_raw'], tf.uint8)
+        distmap = tf.io.decode_raw(example['distmap_raw'], tf.uint8)
         distmap.set_shape([np.prod(self.data_loader.segment_size-2*self.data_loader.crop_by)])
 
-        label = tf.decode_raw(example['volume_seg'], tf.uint8)
+        label = tf.io.decode_raw(example['volume_seg'], tf.uint8)
         label.set_shape([np.prod(self.data_loader.segment_size-2*self.data_loader.crop_by)])
         return volume, label, distmap
 
@@ -182,7 +182,7 @@ class DistMapProcessTup(AbstractProcessTup):
 
         filename = os.path.join(self.output_dir, name + '.tfrecords')
         print('Writing', filename)
-        writer = tf.python_io.TFRecordWriter(filename)
+        writer = tf.io.TFRecordWriter(filename)
         for index in range(volumes.shape[0]):
             volume_raw = volumes[index].ravel()
             distmap_raw = distmap[index].tostring()
@@ -209,12 +209,12 @@ class DenoiseProcessTup(AbstractProcessTup):
         return features
 
     def features_decode(self, serialized_example):
-        example = tf.parse_single_example(
-            serialized_example,
+        example = tf.io.parse_single_example(
+            serialized=serialized_example,
             features={
-                'volume_raw': tf.FixedLenFeature([np.prod(self.data_loader.segment_size)], tf.float32),
-                'denoise_raw': tf.FixedLenFeature([np.prod(self.data_loader.segment_size)], tf.float32),
-                'volume_seg': tf.FixedLenFeature([], tf.string),
+                'volume_raw': tf.io.FixedLenFeature([np.prod(self.data_loader.segment_size)], tf.float32),
+                'denoise_raw': tf.io.FixedLenFeature([np.prod(self.data_loader.segment_size)], tf.float32),
+                'volume_seg': tf.io.FixedLenFeature([], tf.string),
             }
         )
         volume = example['volume_raw']
@@ -223,7 +223,7 @@ class DenoiseProcessTup(AbstractProcessTup):
         denoise = example['denoise_raw']
         denoise.set_shape([np.prod(self.data_loader.segment_size)])
 
-        label = tf.decode_raw(example['volume_seg'], tf.uint8)
+        label = tf.io.decode_raw(example['volume_seg'], tf.uint8)
         label.set_shape([np.prod(self.data_loader.segment_size-2*self.data_loader.crop_by)])
         return volume, label, denoise 
 
@@ -235,7 +235,7 @@ class DenoiseProcessTup(AbstractProcessTup):
 
         filename = os.path.join(self.output_dir, name + '.tfrecords')
         print('Writing', filename)
-        writer = tf.python_io.TFRecordWriter(filename)
+        writer = tf.io.TFRecordWriter(filename)
         for index in range(volumes.shape[0]):
             volume_raw = volumes[index].ravel()
             denoise_raw = denoise[index].ravel()
@@ -304,7 +304,7 @@ class RecordReader(object):
         dataset = dataset.shuffle(1000 + 3 * batch_size)
         dataset = dataset.repeat(num_epochs)
         dataset = dataset.batch(batch_size)
-        iterator = dataset.make_one_shot_iterator()
+        iterator = tf.compat.v1.data.make_one_shot_iterator(dataset)
         return iterator.get_next()
         
     def get_weighting(self, filename):
