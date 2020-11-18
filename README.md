@@ -7,27 +7,34 @@
 
 ### How do I get set up? ###
 
+**Create a working directory for the test** 
+`set OXNNET_TEST_DIR=C:\oxnnet_test_dir`
+`mkdir %OXNNET_TEST_DIR%
+
 **Create a set of test cases** 
 
-`python3 -m tests.utils ~/Desktop/TestVolumes`
+`python -m tests.utils %OXNNET_TEST_DIR%\TestVolumes`
 
 **Write out the TensorFlowRecords**
 
-`python3 main.py --model oxnnet.model.simplenet write --save_dir ~/Desktop/TestRect-tfr --data_dir ~/Desktop/TestVolumes/`
+`python main.py --model oxnnet.model.simplenet write --save_dir %OXNNET_TEST_DIR%\TestRect-tfr --data_dir %OXNNET_TEST_DIR%\TestVolumes\`
 
 **Train the model**
 
-`python3 main.py --model oxnnet.model.simplenet train --tfr_dir ~/Desktop/TestRect-tfr --save_dir ~/Desktop/TestRect-out --num_epochs 10 --batch_size 100`
+`python main.py --model oxnnet.model.simplenet train --tfr_dir %OXNNET_TEST_DIR%\TestRect-tfr --save_dir %OXNNET_TEST_DIR%\TestRect-out --num_epochs 10 --batch_size 100`
 
-**Test the model**
+**Test the model (replace <iteration_no> in this command)**
 
-`python3 main.py --model oxnnet.model.simplenet test --save_dir ~/Desktop/TestRect-out/test --test_data_file ~/Desktop/TestRect-tfr/meta_data.txt --model_file ~/Desktop/TestRect-out/epoch_model.ckpt-<iteration_no> --batch_size 100`
+`python main.py --model oxnnet.model.simplenet test --save_dir %OXNNET_TEST_DIR%\TestRect-out\test --test_data_file %OXNNET_TEST_DIR%\TestRect-tfr/meta_data.txt --model_file %OXNNET_TEST_DIR%\TestRect-out\epoch_model.ckpt-<iteration_no> --batch_size 100`
+
+**Inspect results**
+Download an NII viewer from https://www.nitrc.org/projects/mricron.  Inspect the model outputs in `%OXNNET_TEST_DIR%\TestRect-out\val_preds_###` and compare them to coresponding test volume.
 
 **Dependencies**
 
-`tflearn (v0.3), tensorflow (v1.5), pandas, nibabel`
+`tflearn (v0.3), tensorflow (v2.3), pandas, nibabel`
 
-Python 3.5 recommended.
+Python 3.8 recommended.
 
 ** How to run tests **
 
